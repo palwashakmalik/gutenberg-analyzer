@@ -1,10 +1,10 @@
 "use client";
-
+import React, { JSX } from "react";
 import { useState, useEffect } from "react";
 import { analyzeText } from "@/app/actions/AnalyzeText";
+import { AnalysisPayload, Language, Genre, Sentiment, Theme } from "@/types/analysis.type";
 import {
   Dialog,
-  DialogTrigger,
   DialogContent,
   DialogHeader,
   DialogTitle,
@@ -15,10 +15,9 @@ import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { ScrollArea } from "@/components/ui/scroll-area";
 
 export default function AnalysisResult({ text, onClose }: { text: string; onClose: () => void }) {
-  const [analysis, setAnalysis] = useState<any>(null);
+  const [analysis, setAnalysis] = useState<AnalysisPayload | null>(null);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -26,9 +25,14 @@ export default function AnalysisResult({ text, onClose }: { text: string; onClos
       if (!text) return;
 
       setLoading(true);
-      const result = await analyzeText(text);
-      setAnalysis(result);
-      setLoading(false);
+      try {
+        const result = await analyzeText(text);
+        setAnalysis(result);
+      } catch (error) {
+        console.error("Error fetching analysis:", error);
+      } finally {
+        setLoading(false);
+      }
     }
 
     fetchAnalysis();
@@ -38,9 +42,9 @@ export default function AnalysisResult({ text, onClose }: { text: string; onClos
     <Progress value={confidence * 100} className="w-24" />
   );
 
-  const renderList = (items: any[], renderItem: (item: any) => JSX.Element) => (
+  const renderList = <T,>(items: T[], renderItem: (item: T) => JSX.Element) => (
     <ul className="list-disc pl-5 space-y-2">
-      {items.map((item, index) => (
+      {items?.map((item, index) => (
         <li key={index}>{renderItem(item)}</li>
       ))}
     </ul>
@@ -50,14 +54,13 @@ export default function AnalysisResult({ text, onClose }: { text: string; onClos
     <Dialog open onOpenChange={onClose}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle className="text-lg font-semibold text-primary">
-            📊 Text Analysis Results
-          </DialogTitle>
+          <DialogTitle className="text-lg font-semibold text-primary">📊 Text Analysis Results</DialogTitle>
           <DialogDescription>
             Detailed analysis of the provided text, including key characters, language, genres,
             sentiments, plot summary, themes, notable quotes, events, and observations.
           </DialogDescription>
         </DialogHeader>
+
         {loading ? (
           <div className="space-y-3">
             <Skeleton className="h-6 w-3/4" />
@@ -79,14 +82,10 @@ export default function AnalysisResult({ text, onClose }: { text: string; onClos
                   <strong>🌍 Language:</strong>{" "}
                   {analysis.language
                     ?.map(
-                      (lang: any) =>
-                        `${lang.language} (${(lang.confidence * 100).toFixed(
-                          2
-                        )}%)`
+                      (lang: Language) => `${lang.language} (${(lang.confidence * 100).toFixed(2)}%)`
                     )
                     .join(", ") || "Unknown"}
                 </p>
-
                 <p className="max-h-40 overflow-y-auto p-2">
                   <strong>📖 Plot Summary:</strong> {analysis.plot_summary || "N/A"}
                 </p>
@@ -107,7 +106,7 @@ export default function AnalysisResult({ text, onClose }: { text: string; onClos
               <div className="space-y-3">
                 <div>
                   <strong>📚 Genres:</strong>
-                  {renderList(analysis.genre || [], (genre) => (
+                  {renderList(analysis.genre || [], (genre: Genre) => (
                     <div className="flex items-center space-x-2">
                       <Badge>{genre.genre}</Badge>
                       {renderConfidence(genre.confidence)}
@@ -119,7 +118,7 @@ export default function AnalysisResult({ text, onClose }: { text: string; onClos
 
                 <div>
                   <strong>😊 Sentiments:</strong>
-                  {renderList(analysis.sentiment || [], (sentiment) => (
+                  {renderList(analysis.sentiment || [], (sentiment: Sentiment) => (
                     <div className="flex items-center space-x-2">
                       <Badge>{sentiment.sentiment}</Badge>
                       {renderConfidence(sentiment.confidence)}
@@ -131,7 +130,7 @@ export default function AnalysisResult({ text, onClose }: { text: string; onClos
 
                 <div>
                   <strong>🎨 Themes:</strong>
-                  {renderList(analysis.themes || [], (theme) => (
+                  {renderList(analysis.themes || [], (theme: Theme) => (
                     <div className="flex items-center space-x-2">
                       <Badge>{theme.theme}</Badge>
                       {renderConfidence(theme.confidence)}
@@ -144,18 +143,14 @@ export default function AnalysisResult({ text, onClose }: { text: string; onClos
               <div className="space-y-3 max-h-60 overflow-y-auto p-2">
                 <div>
                   <strong>💬 Notable Quotes:</strong>
-                  {renderList(analysis.notable_quotes || [], (quote) => (
-                    <div>{quote}</div>
-                  ))}
+                  {renderList(analysis.notable_quotes || [], (quote) => <div>{quote}</div>)}
                 </div>
 
                 <Separator />
 
                 <div>
                   <strong>📅 Notable Events:</strong>
-                  {renderList(analysis.notable_events || [], (event) => (
-                    <div>{event}</div>
-                  ))}
+                  {renderList(analysis.notable_events || [], (event) => <div>{event}</div>)}
                 </div>
 
                 <Separator />
