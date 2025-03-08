@@ -86,18 +86,20 @@ export default function AnalysisResult({ text, onClose }: { text: string; onClos
                     )
                     .join(", ") || "Unknown"}
                 </p>
-                <p>
+                <p className="max-h-40 overflow-y-auto p-2">
                   <strong>📖 Plot Summary:</strong> {analysis.plot_summary || "N/A"}
                 </p>
               </div>
             </TabsContent>
 
             <TabsContent value="characters">
+              <div className="max-h-70 overflow-y-auto p-2">
               {renderList(analysis.key_characters || [], (character) => (
                 <div>
                   <strong>{character.name}:</strong> {character.description}
                 </div>
               ))}
+              </div>
             </TabsContent>
 
             <TabsContent value="details">
@@ -137,9 +139,8 @@ export default function AnalysisResult({ text, onClose }: { text: string; onClos
                 </div>
               </div>
             </TabsContent>
-
             <TabsContent value="notables">
-              <div className="space-y-3">
+              <div className="space-y-3 max-h-60 overflow-y-auto p-2">
                 <div>
                   <strong>💬 Notable Quotes:</strong>
                   {renderList(analysis.notable_quotes || [], (quote) => <div>{quote}</div>)}
@@ -162,6 +163,8 @@ export default function AnalysisResult({ text, onClose }: { text: string; onClos
                 </div>
               </div>
             </TabsContent>
+
+
           </Tabs>
         ) : (
           <p className="text-muted-foreground">No analysis available.</p>
