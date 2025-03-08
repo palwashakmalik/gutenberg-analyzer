@@ -1,5 +1,5 @@
 "use client";
-
+import React, { JSX } from "react";
 import { useState, useEffect } from "react";
 import { analyzeText } from "@/app/actions/AnalyzeText";
 import { AnalysisPayload, Language, Genre, Sentiment, Theme } from "@/types/analysis.type";
