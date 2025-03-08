@@ -8,10 +8,17 @@ export async function analyzeText(text: string) {
   }
 
   try {
-    const { data, error } = await supabase.functions.invoke("text-analysis", { body: { bookId: text } });
+    const { data } = await supabase.functions.invoke("text-analysis", { body: { bookId: text } });
     return data;
-  } catch (error: any) {
-    console.error("Text Analysis Error:", error.message);
-    return { error: error.message };
+  } catch (error: unknown) {
+    console.error("Text Analysis Error:", error);
+    
+    let errorMessage = "An unknown error occurred";
+    
+    if (error instanceof Error) {
+      errorMessage = error.message;
+    }
+    
+    return { error: errorMessage };
   }
 }
